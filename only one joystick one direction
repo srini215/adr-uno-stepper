@@ -1,0 +1,74 @@
+/* 
+This is a test sketch for the Adafruit assembled Motor Shield for Arduino v2
+It won't work with v1.x motor shields! Only for the v2's with built in PWM
+control
+
+For use with the Adafruit Motor Shield v2 
+---->   http://www.adafruit.com/products/1438
+*/
+
+#include <AccelStepper.h>
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+#include "utility/Adafruit_PWMServoDriver.h"
+
+// Create the motor shield object with the default I2C address
+//Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
+// Or, create it with a different I2C address (say for stacking)
+// Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x61); 
+Adafruit_MotorShield AFMStop(0x60); 
+// Connect a stepper motor with 200 steps per revolution (7.5 degree)
+// to motor port #2 (M3 and M4)
+Adafruit_StepperMotor *myStepper = AFMStop.getStepper(48, 1);
+
+  int LjoyV = A0;
+  int direction = (0); 
+  int speed = (0);            
+  int LVval = (0);
+  
+ void forwardstep1() { 
+  myStepper->onestep(FORWARD, SINGLE);
+}
+void backwardstep1() { 
+  myStepper->onestep(BACKWARD, SINGLE);
+} 
+ AccelStepper stepper(forwardstep1, backwardstep1); 
+ 
+void setup() {
+  
+  //Serial.begin(115200);
+  AFMStop.begin();
+  myStepper->setSpeed(0);
+}
+
+void loop() {
+  
+  LVval = analogRead(LjoyV);
+  //Serial.print ("   Joy Val ");
+  //Serial.print (LVval);
+  
+  if(LVval > 513)
+  {
+    direction = FORWARD; 
+    speed = map(LVval, 513, 526, 0, 100);
+  }
+  
+  if(LVval < 509)
+  {
+    direction = BACKWARD; 
+    speed = map(LVval, 509, 496, 0, 100);
+  }
+  myStepper->setSpeed(speed);
+  myStepper->step(direction,SINGLE);
+  
+  //if (LVval<=513 && LVval>=509) LVval=511;
+  //if (LVval=511) myStepper->release();
+ 
+ //Serial.print ("  Speed "); 
+ //Serial.print(speed);
+ //Serial.print("     Forward ");
+ //Serial.print(FORWARD);
+ //Serial.print("     Backward ");
+ //Serial.println(BACKWARD);
+
+
