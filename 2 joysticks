@@ -1,0 +1,283 @@
+-/* 
+-Control de dos motores paso a paso.
+-Se controla la velocidad y dirección de dos motores paso
+-utilizando dos entrada analógicas (joystick, por ejemplo).
+-Basado en el ejemplo "Speed Control" de la librería Stepper.
+-
+-Nótese que la librería Stepper produce una secuencia bipolar,
+-pero cablear las salidas intercambiando las dos líneas del centro permite
+-obtener la secuencia de control unipolar.
+-
+-Por Eduardo Rivas, David Escobar y Ángel Moreno
+-para la Universidad Don Bosco de El Salvador, 2013.
+- */
+-
+-#include <Stepper.h>
+-
+-// Establece el número de pasos por revolución
+-const int PPR = 200;
+-
+-// Motor Y en los pines del 10 al 13
+-Stepper motor1(PPR, 10,11,12,13);
+-// Motor X en los pines del 6 al 9
+-Stepper motor2(PPR, 6,7,8,9);
+-
+-void setup() {
+-  // Los pines del 2 al 5 se configuran como entradas con resistencia
+-  // de pullup para el uso de sensores.
+-  // Los sensores deben cerrar a tierra al activarse, (activos en bajo).
+-  for (int i = 2; i <= 5; ++i)
+-  {
+-    pinMode(i, INPUT_PULLUP);
+-  }
+-}
+-
+-void loop() {
+-  // CONTROL DEL MOTOR 1
+-  int velocidad = 0;
+-  int direccion = 1;
+-  // Se lee el valor de la entrada analógica A1
+-  int posicion = analogRead(1);
+-
+-  // Valores entre 562 y 1023 indican movimiento hacia adelante.
+-  // No se asignará velocidad si el sensor correspondiente
+-  // está no está en alto (recordar que son activos en bajo).
+-  // Se asigna un valor a la velocidad entre 0 y 10.
+-  // La dirección se mantiene positiva (1).
+-  if (posicion > 562 and digitalRead(2) == HIGH) {
+-    velocidad = map(posicion, 562, 1023, 0, 10);
+-  }
+-  // Valores entre 0 y 462 indican movimiento hacia atrás.
+-  // No se asignará velocidad si el sensor correspondiente
+-  // está no está en alto (recordar que son activos en bajo).
+-  // Se asigna un valor a la velocidad entre 10 y 0.
+-  // La dirección se vuelve negativa (-1).
+-  if (posicion < 462 and digitalRead(3) == HIGH) {
+-    velocidad = map(posicion, 0, 462, 10, 0);
+-    direccion = -1;
+-  }
+-  // Si los valores leídos están entre 462 y 562, la velocidad es cero.
+-  // Esta es la zona de no movimiento al centro del joystick.
+-  // Si la velocidad no es cero, se mueve el motor1.
+-  if (velocidad > 0) {
+-    motor1.setSpeed(velocidad);
+-    motor1.step(direccion);
+-  }
+-
+-  // CONTROL DEL MOTOR 2
+-  velocidad = 0;
+-  direccion = 1;
+-  // Se lee el valor de la entrada analógica A2
+-  posicion = analogRead(2);
+-
+-  // Valores entre 562 y 1023 indican movimiento hacia adelante.
+-  // No se asignará velocidad si el sensor correspondiente
+-  // está no está en alto (recordar que son activos en bajo).
+-  // Se asigna un valor a la velocidad entre 0 y 10.
+-  // La dirección se mantiene positiva (1).
+-  if (posicion > 562 and digitalRead(4) == HIGH) {
+-    velocidad = map(posicion, 562, 1023, 0, 10);
+-  }
+-  // Valores entre 0 y 462 indican movimiento hacia atrás.
+-  // No se asignará velocidad si el sensor correspondiente
+-  // está no está en alto (recordar que son activos en bajo).
+-  // Se asigna un valor a la velocidad entre 10 y 0.
+-  // La dirección se vuelve negativa (-1).
+-  if (posicion < 462 and digitalRead(5) == HIGH) {
+-    velocidad = map(posicion, 0, 462, 10, 0);
+-    direccion = -1;
+-  }
+-  // Si los valores leídos están entre 462 y 562, la velocidad es cero.
+-  // Esta es la zona de no movimiento al centro del joystick.
+-  // Si la velocidad no es cero, se mueve el motor2.
+-  if (velocidad > 0) {
+-    motor2.setSpeed(velocidad);
+-    motor2.step(direccion);
+-  }
+-}
+  
+82  twin_motor_control.ino
+@@ -0,0 +1,82 @@
++/* 
++Dual Stepper Motor Control (Arduino UNO R3)
++Controls the speed and direction of two stepper motors
++via two analog inputs. Used to achieve two-dimensional
++movement controlled by a joystick. End-of-track sensors
++prevent damage to the structure and motors.
++
++Based on "Speed Control" example of the Stepper lib.
++Please note the Stepper library produces a bipolar sequence.
++By swapping the two middle cables, a unipolar seq. is obtained.
++
++By Eduardo Rivas, David Escobar y Ángel Moreno
++for Universidad Don Bosco of El Salvador, 2013.
++ */
++
++#include <Stepper.h>
++
++// Set steps per revolution
++const int PPR = 200;
++
++// Motor Y in pins 10-13
++Stepper motor1(PPR, 10,11,12,13);
++// Motor X in pins 6-9
++Stepper motor2(PPR, 6,7,8,9);
++
++void setup() {
++  // Pins 2-5 set up as inputs with pullup resistors. Sensors are active-low.
++  for (int i = 2; i <= 5; ++i)
++  {
++    pinMode(i, INPUT_PULLUP);
++  }
++}
++
++void loop() {
++  // MOTOR 1 CONTROL
++  int speed = 0;
++  int direction = 1;
++  // Get joystick position on A1
++  int position = analogRead(1);
++
++  /*
++  Values between 562 and 1023 mean forward movement. Speed gets
++  mapped from 0 to 10 and direction stays positive. Sensors will
++  block any movement if HIGH.
++  */
++  if (position > 562 and digitalRead(2) == HIGH) {
++    speed = map(position, 562, 1023, 0, 10);
++  }
++  /*
++  Values between 0 and 462 mean backwards movement. Speed gets
++  mapped from 10 to 0 and direction is negative. Sensors will
++  block any movement if HIGH.
++  */
++  if (position < 462 and digitalRead(3) == HIGH) {
++    speed = map(position, 0, 462, 10, 0);
++    direction = -1;
++  }
++  // Values between 462 and 562 mean no movement (joystick center zone)
++  if (speed > 0) {
++    motor1.setSpeed(speed);
++    motor1.step(direction);
++  }
++
++  // MOTOR 2 CONTROL
++  speed = 0;
++  direction = 1;
++  position = analogRead(2);
++
++  if (position > 562 and digitalRead(4) == HIGH) {
++    speed = map(position, 562, 1023, 0, 10);
++  }
++
++  if (position < 462 and digitalRead(5) == HIGH) {
++    speed = map(position, 0, 462, 10, 0);
++    direction = -1;
++  }
++
++  if (speed > 0) {
++    motor2.setSpeed(speed);
++    motor2.step(direction);
++  }
++}
+ @jerivas jerivas created this gist on May 28, 2013.
+  
+97  control_2_motores_paso.ino
+@@ -0,0 +1,97 @@
++/* 
++Control de dos motores paso a paso.
++Se controla la velocidad y dirección de dos motores paso
++utilizando dos entrada analógicas (joystick, por ejemplo).
++Basado en el ejemplo "Speed Control" de la librería Stepper.
++
++Nótese que la librería Stepper produce una secuencia bipolar,
++pero cablear las salidas intercambiando las dos líneas del centro permite
++obtener la secuencia de control unipolar.
++
++Por Eduardo Rivas, David Escobar y Ángel Moreno
++para la Universidad Don Bosco de El Salvador, 2013.
++ */
++
++#include <Stepper.h>
++
++// Establece el número de pasos por revolución
++const int PPR = 200;
++
++// Motor Y en los pines del 10 al 13
++Stepper motor1(PPR, 10,11,12,13);
++// Motor X en los pines del 6 al 9
++Stepper motor2(PPR, 6,7,8,9);
++
++void setup() {
++  // Los pines del 2 al 5 se configuran como entradas con resistencia
++  // de pullup para el uso de sensores.
++  // Los sensores deben cerrar a tierra al activarse, (activos en bajo).
++  for (int i = 2; i <= 5; ++i)
++  {
++    pinMode(i, INPUT_PULLUP);
++  }
++}
++
++void loop() {
++  // CONTROL DEL MOTOR 1
++  int velocidad = 0;
++  int direccion = 1;
++  // Se lee el valor de la entrada analógica A1
++  int posicion = analogRead(1);
++
++  // Valores entre 562 y 1023 indican movimiento hacia adelante.
++  // No se asignará velocidad si el sensor correspondiente
++  // está no está en alto (recordar que son activos en bajo).
++  // Se asigna un valor a la velocidad entre 0 y 10.
++  // La dirección se mantiene positiva (1).
++  if (posicion > 562 and digitalRead(2) == HIGH) {
++    velocidad = map(posicion, 562, 1023, 0, 10);
++  }
++  // Valores entre 0 y 462 indican movimiento hacia atrás.
++  // No se asignará velocidad si el sensor correspondiente
++  // está no está en alto (recordar que son activos en bajo).
++  // Se asigna un valor a la velocidad entre 10 y 0.
++  // La dirección se vuelve negativa (-1).
++  if (posicion < 462 and digitalRead(3) == HIGH) {
++    velocidad = map(posicion, 0, 462, 10, 0);
++    direccion = -1;
++  }
++  // Si los valores leídos están entre 462 y 562, la velocidad es cero.
++  // Esta es la zona de no movimiento al centro del joystick.
++  // Si la velocidad no es cero, se mueve el motor1.
++  if (velocidad > 0) {
++    motor1.setSpeed(velocidad);
++    motor1.step(direccion);
++  }
++
++  // CONTROL DEL MOTOR 2
++  velocidad = 0;
++  direccion = 1;
++  // Se lee el valor de la entrada analógica A2
++  posicion = analogRead(2);
++
++  // Valores entre 562 y 1023 indican movimiento hacia adelante.
++  // No se asignará velocidad si el sensor correspondiente
++  // está no está en alto (recordar que son activos en bajo).
++  // Se asigna un valor a la velocidad entre 0 y 10.
++  // La dirección se mantiene positiva (1).
++  if (posicion > 562 and digitalRead(4) == HIGH) {
++    velocidad = map(posicion, 562, 1023, 0, 10);
++  }
++  // Valores entre 0 y 462 indican movimiento hacia atrás.
++  // No se asignará velocidad si el sensor correspondiente
++  // está no está en alto (recordar que son activos en bajo).
++  // Se asigna un valor a la velocidad entre 10 y 0.
++  // La dirección se vuelve negativa (-1).
++  if (posicion < 462 and digitalRead(5) == HIGH) {
++    velocidad = map(posicion, 0, 462, 10, 0);
++    direccion = -1;
++  }
++  // Si los valores leídos están entre 462 y 562, la velocidad es cero.
++  // Esta es la zona de no movimiento al centro del joystick.
++  // Si la velocidad no es cero, se mueve el motor2.
++  if (velocidad > 0) {
++    motor2.setSpeed(velocidad);
++    motor2.step(direccion);
++  }
++
